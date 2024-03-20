@@ -12,21 +12,26 @@
 <script lang="ts" setup>
 import { ref, watchEffect } from "vue";
 import { useProblemStore } from "@/stores/modules/problem";
+import { getMachineDetail } from "@/api/modules/problem";
 import RichText from "./richtext.vue";
 
 const problemStore = useProblemStore();
 const problemData: any = ref({});
-
+const props = defineProps({
+  number: Number
+});
 const editorConfig = {
   placeholder: "",
   MENU_CONF: {}
 };
-watchEffect(() => {
-  problemData.value = { ...problemStore.getStep1Data, ...problemStore.getStep2Data };
-  console.log(problemData.value.samples);
+watchEffect(async () => {
+  if (props.number) {
+    const res = await getMachineDetail(props.number);
+    problemData.value = { ...res.data };
+  } else problemData.value = { ...problemStore.getStep1Data, ...problemStore.getStep2Data };
 });
 </script>
-<style lang="scss">
+<style scoped lang="scss">
 .title {
   font: 30px bolder;
 }

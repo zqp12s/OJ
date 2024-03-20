@@ -1,4 +1,5 @@
 <template>
+  <DescriptionsOfSet :problems-of-set="problemsOfSet" />
   <ProTable
     ref="proTable"
     :columns="columns"
@@ -18,24 +19,38 @@
     </template>
     <template #operation="scope">
       <el-button type="primary" link :icon="EditPen" @click="() => console.log(scope)">编辑</el-button>
-      <el-button type="primary" link :icon="Delete" @click="deleteProblem(scope.row)">删除</el-button>
+      <el-button type="danger" link :icon="Delete" @click="deleteProblem(scope.row)">删除</el-button>
+    </template>
+    <template #pagination>
+      <div style="margin-top: 15px; font-size: 14px; color: #606626">共{{ total }}条</div>
     </template>
   </ProTable>
-  <AddProblemInSet ref="addDialog" :id="machineId" :get-detail-list="getDetailList" type="Machine" />
+  <AddProblemForSet
+    ref="addDialog"
+    :id="machineId"
+    :get-detail-list="getDetailList"
+    type="Machine"
+    :problems-of-set="problemsOfSet"
+  />
 </template>
 <script setup lang="tsx">
 import { ref, watchEffect } from "vue";
 import ProTable from "@/components/ProTable/index.vue";
-import AddProblemInSet from "../AddProblemInSet/index.vue";
+import AddProblemForSet from "../components/AddProblemForSet/index.vue";
 import { getMachineSetDetail, rearrangeProblem, deleteProblems } from "@/api/modules/problemSet";
 import { reactive } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { ColumnProps } from "@/components/ProTable/interface";
 import { CirclePlus, Delete, EditPen, Pointer } from "@element-plus/icons-vue";
+import { useRouter } from "vue-router";
+import DescriptionsOfSet from "../components/DescriptionsOfSet.vue";
+const route = useRouter();
 const props = defineProps<{ id: any }>();
+const problemsOfSet = ref("");
 const machineId = ref();
 const proTable: any = ref(null);
 const addDialog = ref();
+const total = ref(0);
 const initParam = reactive({ type: 1 });
 const columns = reactive<ColumnProps<any>[]>([
   { type: "selection", fixed: "left", width: 70 },
@@ -45,8 +60,27 @@ const columns = reactive<ColumnProps<any>[]>([
     label: "序号",
     render: scope => String.fromCharCode(65 + scope.$index)
   },
-  { prop: "number", label: "题号", search: { el: "input", tooltip: "输入题号进行搜索" } },
-  { prop: "title", label: "标题", search: { el: "input", tooltip: "输入标题进行搜索" } },
+  {
+    prop: "number",
+    label: "题号",
+    render: scope => {
+      return (
+        <el-button
+          type="primary"
+          link
+          onClick={() => {
+            route.push({
+              path: "/problem/machineDetail",
+              query: { number: scope.row.number }
+            });
+          }}
+        >
+          {scope.row.number}
+        </el-button>
+      );
+    }
+  },
+  { prop: "title", label: "标题" },
   { prop: "level", label: "难度" },
   { prop: "score", label: "分值" },
   {
@@ -90,6 +124,11 @@ const openDialog = () => {
   addDialog.value.openDialog();
 };
 const dataCallback = data => {
+  total.value = data?.length;
+  problemsOfSet.value = data
+    .map(item => item.number)
+    .sort()
+    .join(",");
   return data;
 };
 const sortTable = async ({ newIndex, oldIndex }: { newIndex?: number; oldIndex?: number }) => {

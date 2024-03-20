@@ -1,5 +1,8 @@
 <template>
-  <div class="caption">
+  <div v-if="data.iswrittenDetail" style="margin-top: 1vh">
+    <WangEditor v-model:value="data.description" height="" :hide-tool-bar="true" :disabled="true" :editor-config="editorConfig" />
+  </div>
+  <div v-else class="caption">
     <div v-if="data.multiple">
       <p class="content">Sample Input</p>
       <WangEditor
@@ -47,10 +50,30 @@ const props = defineProps({
   label: String,
   description: String,
   multiple: Boolean,
+  iswrittenDetail: Boolean,
   samples: Array
 });
+
+const baseUrl = "???"; // 前置URL
+
+const processDescription = description => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(description, "text/html");
+  const images = doc.querySelectorAll("img");
+
+  images.forEach(img => {
+    const src = img.getAttribute("src");
+    img.setAttribute("src", baseUrl + src);
+  });
+
+  return doc.body.innerHTML;
+};
+
 watchEffect(() => {
   data.value = { ...props };
+  if (data.value.description) {
+    data.value.description = processDescription(data.value.description);
+  }
 });
 </script>
 <style>

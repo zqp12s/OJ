@@ -12,9 +12,9 @@ export const useTable = (
   api?: (params: any) => Promise<any>,
   initParam: object = {},
   isPageable: boolean = true,
-  paginationSize?: number,
   dataCallBack?: (data: any) => any,
-  requestError?: (error: any) => void
+  requestError?: (error: any) => void,
+  paginationSize?: number
 ) => {
   const state = reactive<Table.StateProps>({
     // 表格数据
@@ -22,11 +22,11 @@ export const useTable = (
     // 分页数据
     pageable: {
       // 当前页数
-      pageNum: 1,
+      pageNumber: 0,
       // 每页显示条数
       pageSize: paginationSize || 10,
       // 总条数
-      total: 0
+      totalElements: 0
     },
     // 查询参数(只包括查询)
     searchParam: {},
@@ -42,7 +42,7 @@ export const useTable = (
   const pageParam = computed({
     get: () => {
       return {
-        pageNum: state.pageable.pageNum,
+        pageNum: state.pageable.pageNumber,
         pageSize: state.pageable.pageSize
       };
     },
@@ -62,17 +62,17 @@ export const useTable = (
       Object.assign(
         state.totalParam,
         initParam,
-        isPageable ? { page: pageParam.value.pageNum - 1, size: pageParam.value.pageSize } : {}
+        isPageable ? { page: pageParam.value.pageNum, size: pageParam.value.pageSize } : {}
       );
       let { data } = await api({ ...state.searchInitParam, ...state.totalParam });
+      console.log(data);
+
       dataCallBack && (data = dataCallBack(data));
       state.tableData = isPageable ? data.content : data;
       // 解构后台返回的分页数据 (如果有分页更新分页信息)
       if (isPageable) {
-        const pageNum = data.pageNumber + 1;
-        const pageSize = data.pageSize;
-        const total = data.totalElements;
-        updatePageable({ pageNum, pageSize, total });
+        const { pageNumber, pageSize, totalElements } = data;
+        updatePageable({ pageNumber, pageSize, totalElements });
       }
     } catch (error) {
       requestError && requestError(error);
@@ -111,7 +111,7 @@ export const useTable = (
    * @return void
    * */
   const search = () => {
-    state.pageable.pageNum = 1;
+    state.pageable.pageNumber = 1;
     updatedTotalParam();
     getTableList();
   };
@@ -121,7 +121,7 @@ export const useTable = (
    * @return void
    * */
   const reset = () => {
-    state.pageable.pageNum = 1;
+    state.pageable.pageNumber = 1;
     // 重置搜索表单的时，如果有默认搜索参数，则重置默认的搜索参数
     state.searchParam = { ...state.searchInitParam };
     updatedTotalParam();
@@ -134,7 +134,7 @@ export const useTable = (
    * @return void
    * */
   const handleSizeChange = (val: number) => {
-    state.pageable.pageNum = 1;
+    state.pageable.pageNumber = 1;
     state.pageable.pageSize = val;
     getTableList();
   };
@@ -145,7 +145,7 @@ export const useTable = (
    * @return void
    * */
   const handleCurrentChange = (val: number) => {
-    state.pageable.pageNum = val;
+    state.pageable.pageNumber = val;
     getTableList();
   };
 

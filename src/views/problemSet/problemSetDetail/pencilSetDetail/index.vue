@@ -1,4 +1,5 @@
 <template>
+  <DescriptionsOfSet :problems-of-set="problemsOfSet" />
   <ProTable
     ref="proTable"
     :columns="columns"
@@ -17,35 +18,67 @@
       </el-button>
     </template>
     <template #operation="scope">
-      <!-- <el-button type="primary" link :icon="EditPen" @click="() => console.log(scope)">编辑</el-button> -->
-      <el-button type="primary" link :icon="Delete" @click="deleteProblem(scope.row)">删除</el-button>
+      <el-button type="primary" link :icon="EditPen" @click="() => console.log(scope)">编辑</el-button>
+      <el-button type="danger" link :icon="Delete" @click="deleteProblem(scope.row)">删除</el-button>
+    </template>
+    <template #pagination>
+      <div style="margin-top: 15px; font-size: 14px; color: #606626">共{{ total }}条</div>
     </template>
   </ProTable>
-  <AddProblemInSet ref="addDialog" :id="pencilId" :get-detail-list="getDetailList" type="Pencil" />
+  <AddProblemForSet
+    ref="addDialog"
+    :id="pencilId"
+    :get-detail-list="getDetailList"
+    type="Pencil"
+    :problems-of-set="problemsOfSet"
+  />
 </template>
 <script setup lang="tsx">
-import AddProblemInSet from "../AddProblemInSet/index.vue";
-import { ref, watchEffect } from "vue";
+import AddProblemForSet from "../components/AddProblemForSet/index.vue";
 import ProTable from "@/components/ProTable/index.vue";
+import DescriptionsOfSet from "../components/DescriptionsOfSet.vue";
+import { useRouter } from "vue-router";
+import { ref, watchEffect, reactive } from "vue";
 import { getPencilSetDetail, rearrangeProblem, deleteProblems } from "@/api/modules/problemSet";
-import { reactive } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { ColumnProps } from "@/components/ProTable/interface";
 import { CirclePlus, Delete, EditPen, Pointer } from "@element-plus/icons-vue";
+const route = useRouter();
 const props = defineProps<{ id: any }>();
+const problemsOfSet = ref("");
 const pencilId = ref();
 const addDialog = ref();
 const proTable: any = ref(null);
+const total = ref(0);
 const initParam = reactive({ type: 1 });
 const columns = reactive<ColumnProps<any>[]>([
   { type: "selection", fixed: "left", width: 70 },
-  { type: "sort", label: "Sort", width: 80 },
+  { type: "sort", label: "排序", width: 80 },
   {
     prop: "index",
     label: "序号",
     render: scope => scope.$index + 1 + ""
   },
-  { prop: "number", label: "题号", search: { el: "input", tooltip: "输入题号进行搜索" } },
+  {
+    prop: "number",
+    label: "题号",
+    render: scope => {
+      return (
+        <el-button
+          type="primary"
+          link
+          onClick={() => {
+            route.push({
+              path: "/problem/writtenDetail",
+              query: { ...scope.row }
+            });
+          }}
+        >
+          {scope.row.number}
+        </el-button>
+      );
+    }
+  },
   { prop: "score", label: "分值" },
   {
     prop: "tagNames",
@@ -83,6 +116,11 @@ const getDetailList = () => {
   proTable.value.getTableList();
 };
 const dataCallback = data => {
+  problemsOfSet.value = data
+    .map(item => item.number)
+    .sort()
+    .join(",");
+  total.value = data?.length;
   return [...data];
 };
 const sortTable = async ({ newIndex, oldIndex }: { newIndex?: number; oldIndex?: number }) => {

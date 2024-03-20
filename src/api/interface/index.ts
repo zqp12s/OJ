@@ -29,11 +29,11 @@ export interface ReqPage {
 }
 
 // 文件上传模块
-export namespace Upload {
-  export interface ResFileUrl {
-    fileUrl: string;
-  }
-}
+// export namespace Upload {
+//   export interface Resultimag {
+//     data: string;
+//   }
+// }
 
 // 登录模块
 export namespace Login {
@@ -92,4 +92,59 @@ export namespace User {
     name: string;
     children?: ResDepartment[];
   }
+}
+
+//题组详情
+export interface ProblemSet {
+  id: string;
+  title: string;
+  description: string;
+  type: "Machine" | "Pencil";
+  ruleType: "OI" | "ACM";
+  visible: boolean;
+}
+
+//标签
+export interface Tag {
+  id: number;
+  name: string;
+  children?: Tag[];
+}
+export interface TagDataItem {
+  parentId: number;
+  children: Tag[];
+}
+export interface TagData {
+  [key: string]: TagDataItem[];
+}
+export interface Category {
+  category: string;
+  categoryName: string;
+  tags: Tag[];
+}
+//机试题
+export interface MachineProblem {
+  description: string;
+  hint: string;
+  inputDescription: string;
+  languages: string;
+  level: string;
+  limitMemory: number;
+  limitTime: number;
+  outputDescription: string;
+  samples: Sample[];
+  score: number;
+  source: string;
+  spj: boolean;
+  spjCode: null;
+  spjLanguage: null;
+  tagIds: string[];
+  title: string;
+  visible: boolean;
+  [property: string]: any;
+}
+export interface Sample {
+  input?: string;
+  output?: string;
+  [property: string]: any;
 }

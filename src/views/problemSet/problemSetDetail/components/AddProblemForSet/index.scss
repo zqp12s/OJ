@@ -1,11 +1,11 @@
 .header {
   display: flex;
   justify-content: space-between;
-  margin: 0 0 15px 0;
+  margin: 0 0 15px;
   .left,
   .right {
-    flex: 3;
     display: flex;
+    flex: 3;
     flex-wrap: nowrap;
   }
   .right {

@@ -15,6 +15,7 @@
   <div class="card table-main">
     <!-- 表格头部 操作按钮 -->
     <div class="table-header">
+      <h4 class="title sle" style="padding: 0; margin: 0; font-size: 18px; text-align: center">{{ props.title }}</h4>
       <div class="header-button-lf">
         <slot name="tableHeader" :selected-list="selectedList" :selected-list-ids="selectedListIds" :is-selected="isSelected" />
       </div>
@@ -94,8 +95,8 @@
         :pageable="pageable"
         :handle-size-change="handleSizeChange"
         :handle-current-change="handleCurrentChange"
-        :pagination-sizes="props.paginationSizes"
         :pagination-size="props.paginationSize"
+        :pagination-sizes="props.paginationSizes"
       />
     </slot>
   </div>
@@ -117,6 +118,7 @@ import Pagination from "./components/Pagination.vue";
 import ColSetting from "./components/ColSetting.vue";
 import TableColumn from "./components/TableColumn.vue";
 import Sortable from "sortablejs";
+
 export interface ProTableProps {
   columns: ColumnProps[]; // 列配置项  ==> 必传
   data?: any[]; // 静态 table data 数据，若存在则不会使用 requestApi 返回的 data ==> 非必传
@@ -126,8 +128,8 @@ export interface ProTableProps {
   dataCallback?: (data: any) => any; // 返回数据的回调函数，可以对数据进行处理 ==> 非必传
   title?: string; // 表格标题 ==> 非必传
   pagination?: boolean; // 是否需要分页组件 ==> 非必传（默认为true）
-  paginationSizes?: any[]; //页码数量 ==> 非必传
-  paginationSize?: number;
+  paginationSize?: number; //每页所展示的条数
+  paginationSizes?: number[]; //每页条数数组
   initParam?: any; // 初始化请求参数 ==> 非必传（默认为{}）
   border?: boolean; // 是否带有纵向边框 ==> 非必传（默认为true）
   toolButton?: ("refresh" | "setting" | "search")[] | boolean; // 是否显示表格功能按钮 ==> 非必传（默认为true）
@@ -169,7 +171,7 @@ const { selectionChange, selectedList, selectedListIds, isSelected } = useSelect
 
 // 表格操作 Hooks
 const { tableData, pageable, searchParam, searchInitParam, getTableList, search, reset, handleSizeChange, handleCurrentChange } =
-  useTable(props.requestApi, props.initParam, props.pagination, props.paginationSize, props.dataCallback, props.requestError);
+  useTable(props.requestApi, props.initParam, props.pagination, props.dataCallback, props.requestError, props.paginationSize);
 
 // 清空选中数据列表
 const clearSelection = () => tableRef.value!.clearSelection();
@@ -178,18 +180,18 @@ const clearSelection = () => tableRef.value!.clearSelection();
 onMounted(() => {
   dragSort();
   props.requestAuto && getTableList();
-  props.data && (pageable.value.total = props.data.length);
+  props.data && (pageable.value.totalElements = props.data.length);
 });
+
 // 处理表格数据
 const processTableData = computed(() => {
   if (!props.data) return tableData.value;
   if (!props.pagination) return props.data;
   return props.data.slice(
-    (pageable.value.pageNum - 1) * pageable.value.pageSize,
-    pageable.value.pageSize * pageable.value.pageNum
+    (pageable.value.pageNumber - 1) * pageable.value.pageSize,
+    pageable.value.pageSize * pageable.value.pageNumber
   );
 });
-
 // 监听页面 initParam 改化，重新获取表格数据
 watch(() => props.initParam, getTableList, { deep: true });
 

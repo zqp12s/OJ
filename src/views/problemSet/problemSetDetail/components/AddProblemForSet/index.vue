@@ -1,8 +1,12 @@
 <template>
-  <el-dialog v-model="dialogVisible" title="为题组添加题目" width="70%" style="min-width: 400px; position: relative">
+  <el-dialog v-model="dialogVisible" title="为题组添加题目" width="70%" style="position: relative; min-width: 400px">
+    <div style="display: flex; flex-wrap: nowrap; align-items: center; margin-bottom: 20px">
+      <div style="white-space: nowrap">当前题组已包含题目：</div>
+      <el-input disabled label="当前题组已包含题目：" v-model="problemsInSet"></el-input>
+    </div>
     <div class="header">
       <div class="left">
-        <el-input v-model="numbers" placeholder="题目编号（格式：1001,1002,1003）" />
+        <el-input v-model="numbers" placeholder="题目编号（格式：1001,1002,1003）" @input="limitIptNumber" />
         <el-button type="primary" @click="patchAdd">批量添加</el-button>
       </div>
       <div class="right">
@@ -21,22 +25,17 @@
       :pagination-size="pageSizes[0]"
       row-key="number"
     >
-      <template #tableHeader>
-        <el-button type="warning" :icon="Pointer" plain @click="proTable?.element?.toggleAllSelection">全选/全不选</el-button>
-      </template>
     </ProTable>
   </el-dialog>
 </template>
-
 <script lang="tsx" setup>
 import { reactive, ref, watchEffect } from "vue";
 import ProTable from "@/components/ProTable/index.vue";
-import { Plus, Pointer } from "@element-plus/icons-vue";
 import { getProblems } from "@/api/modules/problemSet";
 import { ColumnProps } from "@/components/ProTable/interface";
 import { addMachineProblem } from "@/api/modules/problemSet";
 import { ElMessage } from "element-plus";
-const props = defineProps<{ id: any; getDetailList: Function; type: "Machine" | "Pencil" }>();
+const props = defineProps<{ id: any; getDetailList: Function; type: "Machine" | "Pencil"; problemsOfSet: string }>();
 const machineSetId = ref();
 const problemSetType = ref();
 const dialogVisible = ref(false);
@@ -45,12 +44,17 @@ const numbers = ref("");
 const keywords = ref();
 const initParam = reactive({ type: 1 });
 const pageSizes = [5, 10];
+const problemsInSet = ref("");
 const columns = reactive<ColumnProps<any>[]>([
-  { type: "selection", fixed: "left", width: 70 },
   { prop: "number", label: "题号" },
   { prop: "title", label: "标题", isShow: props.type === "Machine" },
   { prop: "score", label: "分值", isShow: props.type === "Pencil" }
 ]);
+const limitIptNumber = () => {
+  let str = numbers.value;
+  str = str.replace(/[^\d^\,]+/g, "");
+  numbers.value = str;
+};
 const search = () => {};
 const patchAdd = async () => {
   const res = await addMachineProblem(machineSetId.value, numbers.value, problemSetType.value);
@@ -71,34 +75,16 @@ const dataCallback = data => {
 const getTableList = (params: any) => {
   return getProblems(problemSetType.value, params);
 };
-// let timer: any = null;
-// watch(
-//   numbers,
-//   (newValue: string) => {
-//     if (timer !== null) {
-//       clearTimeout(timer);
-//     }
-//     timer = setTimeout(() => {
-//       let arrNew: string[] = newValue?.split(",");
-//       arrNew?.forEach(element => {
-//         if (!proTable.value?.selectedListIds.includes(element)) {
-//           proTable.value?.selectedListIds.push(element);
-//           console.log(proTable.value?.selectedListIds);
-//         }
-//       });
-//     }, 1000);
-//   },
-//   { immediate: false }
-// );
 watchEffect(() => {
   machineSetId.value = props.id;
   problemSetType.value = props.type.toLowerCase();
   numbers.value = proTable.value?.selectedListIds.join();
+  problemsInSet.value = props.problemsOfSet;
 });
 defineExpose({
   openDialog
 });
 </script>
 <style scoped lang="scss">
-@import url(./index.scss);
+@import "./index.scss";
 </style>

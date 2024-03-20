@@ -50,6 +50,8 @@ import { reactive, ref, watchEffect } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import type { FormInstance, FormRules } from "element-plus";
 import { createProblemSet, editProblemSetInfo } from "@/api/modules/problemSet";
+import { useRouter } from "vue-router";
+const route = useRouter();
 const drawerVisible = ref<boolean>(false);
 const props = defineProps<{ currentRow: any; isEdit: boolean }>();
 const formData = ref();
@@ -104,6 +106,7 @@ const addProblemSet = async (formEl: FormInstance | undefined) => {
       const res = await createProblemSet(data);
       if (+res.code === 200) {
         ElMessage({ message: "创建成功", type: "success", duration: 1000 });
+        route.push({ name: "problemSetDetail", query: { id: res.data.id, type: res.data.type } });
       } else {
         ElMessage({ message: "创建失败,1s后自动关闭页面", type: "error", duration: 1000 });
       }

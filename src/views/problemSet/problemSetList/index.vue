@@ -1,15 +1,15 @@
 <template>
   <el-tabs type="border-card">
     <ProTable ref="proTable" :columns="columns" :request-api="getTableList" :init-param="initParam" :data-callback="dataCallback">
-      <template #tableHeader>
+      <template #tableHeader="scope">
         <el-button type="primary" :icon="CirclePlus" @click="addProblemSet">新增题组</el-button>
-        <!-- <el-button type="warning" :icon="Pointer" plain @click="proTable?.element?.toggleAllSelection">全选/全不选</el-button>
-        <el-button type="danger" :icon="Delete" plain :disabled="!scope.isSelected" @click="() => {}"> 批量删除 </el-button> -->
+        <el-button type="warning" :icon="Pointer" plain @click="proTable?.element?.toggleAllSelection">全选/全不选</el-button>
+        <el-button type="danger" :icon="Delete" plain :disabled="!scope.isSelected" @click="() => {}"> 批量删除 </el-button>
       </template>
       <template #operation="scope">
         <el-button type="primary" link :icon="EditPen" @click="editProblemSet(scope.row)">编辑</el-button>
         <el-button type="primary" link :icon="Tickets" @click="toProblemSetDetail(scope.row)">详情</el-button>
-        <el-button type="primary" link :icon="Delete" @click="delProblemSet(scope.row)">删除</el-button>
+        <el-button type="danger" link :icon="Delete" @click="delProblemSet(scope.row)">删除</el-button>
       </template>
     </ProTable>
     <Drawer ref="drawer" v-model:current-row="currentRow" v-model:is-edit="isEdit" />
@@ -22,16 +22,16 @@ import { getProblemSets, deleteProblemSet } from "@/api/modules/problemSet";
 import { reactive, ref } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { ColumnProps } from "@/components/ProTable/interface";
-import { CirclePlus, Delete, EditPen, Pointer, Tickets } from "@element-plus/icons-vue";
+import { CirclePlus, Delete, Pointer, EditPen, Tickets } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
 const route = useRouter();
 const proTable: any = ref(null);
 const drawer = ref();
 const isEdit = ref(false);
 const currentRow = ref();
-const initParam = reactive({ type: 1 });
+const initParam = reactive({ type: "Machine" });
 const columns = reactive<ColumnProps<any>[]>([
-  // { type: "selection", fixed: "left", width: 70 },
+  { type: "selection", fixed: "left", width: 70 },
   {
     prop: "title",
     label: "标题",

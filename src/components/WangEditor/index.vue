@@ -15,18 +15,22 @@
 
 <script setup lang="ts" name="WangEditor">
 import { nextTick, computed, inject, shallowRef, onBeforeUnmount } from "vue";
-import { IToolbarConfig, IEditorConfig } from "@wangeditor/editor";
+import { IToolbarConfig, IEditorConfig, DomEditor } from "@wangeditor/editor";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
-import { uploadImg, uploadVideo } from "@/api/modules/upload";
+import { uploadImg } from "@/api/modules/upload";
 import "@wangeditor/editor/dist/css/style.css";
 import { formContextKey, formItemContextKey } from "element-plus";
-
+import axios from "axios";
 // 富文本 DOM 元素
 const editorRef = shallowRef();
 
 // 实列化编辑器
 const handleCreated = (editor: any) => {
   editorRef.value = editor;
+  // nextTick(() => {
+  //   const toolbar = DomEditor.getToolbar(editor);
+  //   console.log(toolbar!.getConfig().toolbarKeys);
+  // });
 };
 
 // 接收父组件参数，并设置默认值
@@ -49,7 +53,7 @@ const props = withDefaults(defineProps<RichEditorProps>(), {
           "editFormula" // “编辑公式”菜单
         ]
       },
-      excludeKeys: ["insertVideo", "uploadVideo"] //去除视频上传
+      excludeKeys: ["group-video", "emotion"] //去除视频上传
     };
   },
   editorConfig: () => {
@@ -98,20 +102,51 @@ const valueHtml = computed({
  * @param insertFn 上传成功后的回调函数（插入到富文本编辑器中）
  * */
 type InsertFnTypeImg = (url: string, alt?: string, href?: string) => void;
+// props.editorConfig.MENU_CONF!["uploadImage"] = {
+//   maxNumberOfFiles: 1,
+//   async customUpload(file: File, insertFn: InsertFnTypeImg) {
+//     if (!uploadImgValidate(file)) return;
+//     try {
+//       const { data } = await getUploadURL(file.name); //获取预签名的上传链接
+//       const uploadUrl = data;
+//       console.log(uploadUrl);
+
+//       if (uploadUrl && typeof uploadUrl === "string") {
+//         // 使用 axios 上传文件
+//         const res = await axios.put(uploadUrl, file);
+//         console.log(res);
+
+//         // 上传成功后，插入图片
+//         if (res.status === 200) {
+//           // 如果上传成功后，返回的 URL 是图片的访问地址
+//           const imageUrl = res.data.url || uploadUrl;
+//           insertFn(imageUrl);
+//         } else {
+//           console.error("上传失败");
+//         }
+//       } else {
+//         console.error("获取上传链接失败");
+//       }
+//     } catch (error) {
+//       console.log(error);
+//     }
+//   }
+// };
 props.editorConfig.MENU_CONF!["uploadImage"] = {
+  maxNumberOfFiles: 1,
   async customUpload(file: File, insertFn: InsertFnTypeImg) {
     if (!uploadImgValidate(file)) return;
-    let formData = new FormData();
-    formData.append("file", file);
     try {
-      const { data } = await uploadImg(formData);
-      insertFn(data.fileUrl);
+      const res = await uploadImg(file);
+      const imageUrl = res.data;
+      if (imageUrl && typeof imageUrl === "string") {
+        insertFn(imageUrl);
+      }
     } catch (error) {
       console.log(error);
     }
   }
 };
-
 // 图片上传前判断
 const uploadImgValidate = (file: File): boolean => {
   console.log(file);
@@ -124,19 +159,19 @@ const uploadImgValidate = (file: File): boolean => {
  * @param insertFn 上传成功后的回调函数（插入到富文本编辑器中）
  * */
 type InsertFnTypeVideo = (url: string, poster?: string) => void;
-props.editorConfig.MENU_CONF!["uploadVideo"] = {
-  async customUpload(file: File, insertFn: InsertFnTypeVideo) {
-    if (!uploadVideoValidate(file)) return;
-    let formData = new FormData();
-    formData.append("file", file);
-    try {
-      const { data } = await uploadVideo(formData);
-      insertFn(data.fileUrl);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-};
+// props.editorConfig.MENU_CONF!["uploadVideo"] = {
+//   async customUpload(file: File, insertFn: InsertFnTypeVideo) {
+//     if (!uploadVideoValidate(file)) return;
+//     let formData = new FormData();
+//     formData.append("file", file);
+//     try {
+//       const { data } = await uploadVideo(formData);
+//       insertFn(data.fileUrl);
+//     } catch (error) {
+//       console.log(error);
+//     }
+//   }
+// };
 
 // 视频上传前判断
 const uploadVideoValidate = (file: File): boolean => {

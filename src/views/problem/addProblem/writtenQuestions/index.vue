@@ -15,7 +15,7 @@
           v-for="(question, number) in form.questions"
           :key="'question' + number"
           class="custom-card"
-          style="position: relative; min-width: 100%; max-width: 100%"
+          style="position: relative; width: 168.5vh"
         >
           <template #header>
             <div style="position: absolute; top: 5px; font-size: 18px">
@@ -35,7 +35,7 @@
               </el-space>
             </div>
           </template>
-          <div>
+          <div style="width: 100%">
             <div style="width: 100%">
               <b> 问题描述:</b>
               <el-input
@@ -46,7 +46,7 @@
                 placeholder="Please input"
               />
             </div>
-            <div style="display: flex; flex-direction: column; min-width: 165vh; margin-top: 1vh">
+            <div style="display: flex; flex-direction: column; margin-top: 1vh">
               <div><b>问题选项:</b></div>
               <el-checkbox-group v-model="form.questions[number].correctAnswers">
                 <el-radio-group v-model="form.questions[number].correctAnswers">
@@ -96,7 +96,7 @@ import { useWrittenStore } from "@/stores/modules/written";
 import { useTabsStore } from "@/stores/modules/tabs";
 import { ElMessage } from "element-plus";
 import { useRoute } from "vue-router";
-import { TabPaneName } from "element-plus";
+import { addWrittenProblems } from "@/api/modules/problem";
 import WangEditor from "@/components/WangEditor/index.vue";
 
 const route = useRoute();
@@ -163,9 +163,20 @@ const saveData = () => {
     });
   }
 };
-const handleSubmit = () => {
-  tabStore.removeTabs(route.fullPath as string, true);
-  writtenStore.resetStore();
+const handleSubmit = async () => {
+  form.value.questions = form.value.questions.map(item => {
+    return { ...item, correctAnswers: [...item.correctAnswers] };
+  });
+
+  const res = await addWrittenProblems(form.value);
+  if (+res?.code === 200) {
+    tabStore.removeTabs(route.fullPath as string, true);
+    writtenStore.resetStore();
+  } else
+    ElMessage({
+      message: res.msg,
+      type: "error"
+    });
 };
 watchEffect(() => {
   form.value = { ...writtenStore.getWrittenData };

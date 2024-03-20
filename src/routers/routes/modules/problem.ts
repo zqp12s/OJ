@@ -31,12 +31,57 @@ export const route = [
       },
       {
         path: "/problem/addWrittenProblem",
-        name: "addProblem",
+        name: "addWrittenProblem",
         component: () => import("@/views/problem/addProblem/writtenQuestions/index.vue"),
         isShow: false,
         meta: {
           icon: "",
           title: "笔试题目录入",
+          isLink: "",
+          isHide: false,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: false
+        }
+      },
+      {
+        path: "/problem/addMachineProblem",
+        name: "addMachineProblem",
+        component: () => import("@/views/problem/addProblem/machineQuestion/index.vue"),
+        isShow: false,
+        meta: {
+          icon: "",
+          title: "机试题目录入",
+          isLink: "",
+          isHide: false,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: false
+        }
+      },
+      {
+        path: "/problem/writtenDetail",
+        name: "writtenDetail",
+        component: () => import("@/views/problem/problemList/components/writtenDetail.vue"),
+        isShow: false,
+        meta: {
+          icon: "",
+          title: "笔试题详情",
+          isLink: "",
+          isHide: false,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: false
+        }
+      },
+      {
+        path: "/problem/machineDetail",
+        name: "machineDetail",
+        component: () => import("@/views/problem/problemList/components/machineDetail.vue"),
+        isShow: false,
+        meta: {
+          icon: "",
+          title: "机试题详情",
           isLink: "",
           isHide: false,
           isFull: false,

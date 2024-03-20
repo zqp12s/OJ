@@ -10,9 +10,16 @@ const keepAliveStore = useKeepAliveStore();
 export const useTabsStore = defineStore({
   id: "geeker-tabs",
   state: (): TabsState => ({
-    tabsMenuList: []
+    tabsMenuList: [],
+    paneNumber: 1
   }),
+  getters: {
+    getPaneNumber: state => state.paneNumber
+  },
   actions: {
+    paneChange(number) {
+      this.paneNumber = number;
+    },
     // Add Tabs
     async addTabs(tabItem: TabsMenuProps) {
       if (this.tabsMenuList.every(item => item.path !== tabItem.path)) {

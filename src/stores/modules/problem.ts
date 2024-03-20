@@ -13,7 +13,7 @@ export const useProblemStore = defineStore({
       hint: "",
       level: "",
       source: "",
-      tags: [],
+      tagIds: [] as string[],
       visible: false,
       timeLimit: 1000,
       memoryLimit: 128
@@ -24,13 +24,21 @@ export const useProblemStore = defineStore({
       spjLanguage: "",
       samples: [{ input: "", output: "" }],
       testCaseHash: "",
-      testCaseScores: []
+      testCaseScores: [
+        {
+          score: 0.0,
+          inputName: "1.in",
+          outputName: "2.in"
+        }
+      ]
     },
+    pageNumber: 0,
     Step1Satus: false,
     Step2Satus: false,
     step3Data: {}
   }),
   getters: {
+    getPageNumber: state => state.pageNumber,
     getStep1Data: state => state.step1Data,
     getStep2Data: state => state.step2Data,
     getStep1Satus: state => state.Step1Satus,
@@ -49,6 +57,9 @@ export const useProblemStore = defineStore({
     },
     saveStep2(params) {
       this.step2Data = { ...params };
+    },
+    savePageNumber(number) {
+      this.pageNumber = number;
     },
     changeStep1Status(status) {
       this.Step1Satus = status;
