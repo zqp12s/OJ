@@ -1,0 +1,19 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 15px 0;
+  .left,
+  .right {
+    flex: 3;
+    display: flex;
+    flex-wrap: nowrap;
+  }
+  .right {
+    flex: 2;
+    margin-left: 20px;
+  }
+  .left button,
+  .right button {
+    margin-left: 10px;
+  }
+}
